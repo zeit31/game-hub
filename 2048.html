@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048 – Game Hub</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Specific styles for the 2048 page */
+    body.game-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background-color: #faf8ef;
+      min-height: 100vh;
+    }
+    canvas {
+      border: 2px solid #bbada0;
+      background-color: #faf8ef;
+      margin-top: 20px;
+    }
+    .gameover {
+      text-align: center;
+      font-size: 2rem;
+      color: #776e65;
+      display: none;
+      margin-top: 10px;
+    }
+    .restart {
+      color: #8f7a66;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body class="game-page">
+  <a class="back-link" href="index.html">&larr; Back to Home</a>
+  <h1>2048</h1>
+  <!-- Game over message displayed when no moves remain -->
+  <div class="gameover">
+    <span>Game over</span>
+    <span class="restart" onclick="restart2048()">Restart</span>
+  </div>
+  <!-- Game canvas (480×480) for the 2048 game -->
+  <canvas id="game" width="480" height="480"></canvas>
+
+  <!-- Include the 2048 engine -->
+  <script src="js/2048.js"></script>
+  <script>
+    let game;
+    function start2048() {
+      const ctx = document.getElementById('game').getContext('2d');
+      game = new Game(ctx);
+      game.start();
+    }
+    function restart2048() {
+      document.querySelector('.gameover').style.display = 'none';
+      game.start();
+    }
+    // Override the addNumberAndDraw method to trigger our game over UI.
+    const originalAdd = Game.prototype.addNumberAndDraw;
+    Game.prototype.addNumberAndDraw = function() {
+      const result = originalAdd.call(this);
+      if (result === undefined) {
+        // When no new tile can be placed, the game is over
+        document.querySelector('.gameover').style.display = 'block';
+      }
+      return result;
+    };
+    // Start the game on page load
+    start2048();
+  </script>
+</body>
+</html>
