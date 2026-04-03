@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Match – Game Hub</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Layout styles for the Memory game */
+    body.game-page {
+      font-family: 'Open Sans', sans-serif;
+      background: #fdfdfd;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+    }
+    #memory-game {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background: #8cbf3d;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s;
+    }
+    .card.flipped, .card.matched {
+      background: #fff;
+      cursor: default;
+    }
+    .card .front {
+      visibility: hidden;
+    }
+    .card.flipped .front, .card.matched .front {
+      visibility: visible;
+    }
+    .card.flipped .back, .card.matched .back {
+      visibility: hidden;
+    }
+    .card .back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #fff;
+    }
+    #moves {
+      margin-top: 10px;
+      text-align: center;
+    }
+    #win-message {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 1.5rem;
+      color: #666;
+      display: none;
+    }
+  </style>
+</head>
+<body class="game-page">
+  <a class="back-link" href="index.html">&larr; Back to Home</a>
+  <h1>Memory Match</h1>
+  <div id="memory-game"></div>
+  <div id="moves">Moves: <span id="move-count">0</span></div>
+  <div id="win-message">Congratulations! You matched all pairs!</div>
+  <script>
+    // Simple memory matching game implemented from scratch.
+    // The goal is to find pairs by flipping two cards at a time. If the cards match,
+    // they stay revealed; otherwise they are turned back over. Solo players
+    // try to finish in as few moves as possible【418000297072478†L840-L848】.
+    const emojis = ['🍎','🍌','🍇','🍉','🍒','🥑','🍓','🍍'];
+    // Duplicate the array to create pairs and shuffle the result
+    const cards = emojis.concat(emojis);
+    const shuffled = cards.sort(() => 0.5 - Math.random());
+    const gameContainer = document.getElementById('memory-game');
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let moves = 0;
+    function createCard(emoji) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      const back = document.createElement('div');
+      back.classList.add('back');
+      back.textContent = '?';
+      const front = document.createElement('div');
+      front.classList.add('front');
+      front.textContent = emoji;
+      card.appendChild(front);
+      card.appendChild(back);
+      card.setAttribute('data-emoji', emoji);
+      card.addEventListener('click', onCardClick);
+      return card;
+    }
+    function onCardClick(e) {
+      const clicked = e.currentTarget;
+      if (lockBoard) return;
+      if (clicked.classList.contains('flipped') || clicked.classList.contains('matched')) return;
+      clicked.classList.add('flipped');
+      if (!firstCard) {
+        firstCard = clicked;
+        return;
+      }
+      secondCard = clicked;
+      moves++;
+      document.getElementById('move-count').textContent = moves;
+      checkForMatch();
+    }
+    function checkForMatch() {
+      lockBoard = true;
+      const isMatch = firstCard.getAttribute('data-emoji') === secondCard.getAttribute('data-emoji');
+      if (isMatch) {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        resetTurn();
+        checkWin();
+      } else {
+        setTimeout(() => {
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          resetTurn();
+        }, 800);
+      }
+    }
+    function resetTurn() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
+    }
+    function checkWin() {
+      const matchedCards = document.querySelectorAll('.card.matched');
+      if (matchedCards.length === shuffled.length) {
+        document.getElementById('win-message').style.display = 'block';
+      }
+    }
+    // Initialize the game by creating all the card elements
+    shuffled.forEach(emoji => {
+      const cardElement = createCard(emoji);
+      gameContainer.appendChild(cardElement);
+    });
+  </script>
+</body>
+</html>
