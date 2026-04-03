@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake – Game Hub</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Styles specific to the Snake game */
+    body.snake-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      margin: 0;
+    }
+    canvas {
+      border: 1px solid #fff;
+    }
+    .back-link {
+      color: #fff;
+    }
+  </style>
+</head>
+<body class="snake-page">
+  <a class="back-link" href="index.html">&larr; Back to Home</a>
+  <h1>Snake</h1>
+  <canvas id="game" width="400" height="400"></canvas>
+  <script>
+    // Basic Snake game based on the CC0 gist by Straker (https://gist.github.com/straker/ff00b4b49669ad3dec890306d348adc4)
+    var canvas = document.getElementById('game');
+    var context = canvas.getContext('2d');
+    // size of each grid cell (snake moves one grid at a time)
+    var grid = 16;
+    var count = 0;
+    var snake = {
+      x: 160,
+      y: 160,
+      dx: grid,
+      dy: 0,
+      cells: [],
+      maxCells: 4
+    };
+    var apple = {
+      x: 320,
+      y: 320
+    };
+    // return a random integer between min (inclusive) and max (exclusive)
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+    function loop() {
+      requestAnimationFrame(loop);
+      // slow game loop to 15 fps instead of 60
+      if (++count < 4) {
+        return;
+      }
+      count = 0;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      // move snake by its velocity
+      snake.x += snake.dx;
+      snake.y += snake.dy;
+      // wrap horizontally
+      if (snake.x < 0) {
+        snake.x = canvas.width - grid;
+      } else if (snake.x >= canvas.width) {
+        snake.x = 0;
+      }
+      // wrap vertically
+      if (snake.y < 0) {
+        snake.y = canvas.height - grid;
+      } else if (snake.y >= canvas.height) {
+        snake.y = 0;
+      }
+      // keep track of snake body
+      snake.cells.unshift({ x: snake.x, y: snake.y });
+      if (snake.cells.length > snake.maxCells) {
+        snake.cells.pop();
+      }
+      // draw apple
+      context.fillStyle = 'red';
+      context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+      // draw snake body
+      context.fillStyle = 'lime';
+      snake.cells.forEach(function (cell, index) {
+        context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+        // snake eats apple
+        if (cell.x === apple.x && cell.y === apple.y) {
+          snake.maxCells++;
+          apple.x = getRandomInt(0, 25) * grid;
+          apple.y = getRandomInt(0, 25) * grid;
+        }
+        // check collision with itself
+        for (var i = index + 1; i < snake.cells.length; i++) {
+          if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+            // reset snake to starting state
+            snake.x = 160;
+            snake.y = 160;
+            snake.cells = [];
+            snake.maxCells = 4;
+            snake.dx = grid;
+            snake.dy = 0;
+            apple.x = getRandomInt(0, 25) * grid;
+            apple.y = getRandomInt(0, 25) * grid;
+          }
+        }
+      });
+    }
+    // listen to keyboard events to move the snake
+    document.addEventListener('keydown', function (e) {
+      // left arrow
+      if (e.which === 37 && snake.dx === 0) {
+        snake.dx = -grid;
+        snake.dy = 0;
+      } else if (e.which === 38 && snake.dy === 0) { // up arrow
+        snake.dy = -grid;
+        snake.dx = 0;
+      } else if (e.which === 39 && snake.dx === 0) { // right arrow
+        snake.dx = grid;
+        snake.dy = 0;
+      } else if (e.which === 40 && snake.dy === 0) { // down arrow
+        snake.dy = grid;
+        snake.dx = 0;
+      }
+    });
+    // start the game loop
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
